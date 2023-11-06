@@ -39,8 +39,6 @@ The content is exposed in the child component using the `<slot>` element, which 
 
 Note: If you want to render regular `<slot>` element, You can use `<svelte:element this="slot" />`.
 
-Note: If you want to render regular `<slot>` element, You can use `<svelte:element this="slot" />`.
-
 ### `<slot name="`_name_`">`
 
 Named slots allow consumers to target specific areas. They can also have fallback content.
@@ -200,7 +198,6 @@ If `this` is the name of a [void element](https://developer.mozilla.org/en-US/do
 <script>
 	let tag = 'div';
 
-	/** @type {(e: MouseEvent) => void} */
 	export let handler;
 </script>
 
@@ -328,7 +325,7 @@ The `<svelte:options>` element provides a place to specify per-component compile
 
 ## `<svelte:fragment>`
 
-The `<svelte:fragment>` element allows you to place content in a [named slot](/docs/special-elements#slot-name-name) without wrapping it in a container DOM element. This keeps the flow layout of your document intact.
+The `<svelte:fragment>` element allows you to place content in a [named slot](/docs/special-elements#slot-slot-name-name) without wrapping it in a container DOM element. This keeps the flow layout of your document intact.
 
 ```svelte
 <!-- Widget.svelte -->

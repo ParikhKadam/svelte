@@ -1,8 +1,8 @@
 <script>
 	import { page } from '$app/stores';
-	import * as hovers from '$lib/utils/hovers';
 	import { Icon } from '@sveltejs/site-kit/components';
-	import { DocsOnThisPage } from '@sveltejs/site-kit/docs';
+	import { copy_code_descendants } from '@sveltejs/site-kit/actions';
+	import { DocsOnThisPage, setupDocsHovers } from '@sveltejs/site-kit/docs';
 
 	export let data;
 
@@ -11,7 +11,7 @@
 	$: prev = pages[index - 1];
 	$: next = pages[index + 1];
 
-	hovers.setup();
+	setupDocsHovers();
 </script>
 
 <svelte:head>
@@ -22,13 +22,15 @@
 	<meta name="Description" content="{data.page.title} • Svelte documentation" />
 </svelte:head>
 
-<div class="text" id="docs-content">
+<div class="text" id="docs-content" use:copy_code_descendants>
 	<a
 		class="edit"
-		href="https://github.com/sveltejs/svelte/edit/master/documentation/{data.page.file}"
+		href="https://github.com/sveltejs/svelte/edit/master/documentation/docs/{data.page.file}"
 	>
 		<Icon size={50} name="edit" /> Edit this page on GitHub
 	</a>
+
+	<DocsOnThisPage details={data.page} />
 
 	{@html data.page.content}
 </div>
@@ -49,8 +51,6 @@
 		{/if}
 	</div>
 </div>
-
-<DocsOnThisPage details={data.page} />
 
 <style>
 	.edit {

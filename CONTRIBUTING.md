@@ -62,7 +62,7 @@ When [opening a new issue](https://github.com/sveltejs/svelte/issues/new/choose)
 
 ## Pull requests
 
-> HEADS UP: The Svelte repo is currently in the process of heavy restructuring for Svelte 4. After that, work on Svelte 5 will likely change a lot on the compiler aswell. For that reason, please don't open PRs that are large in scope, touch more than a couple of files etc. In other words, bug fixes are fine, but feature PRs will likely not be merged.
+> HEADS UP: Svelte 5 will likely change a lot on the compiler. For that reason, please don't open PRs that are large in scope, touch more than a couple of files etc. In other words, bug fixes are fine, but big feature PRs will likely not be merged.
 
 ### Proposing a change
 
@@ -96,6 +96,8 @@ All tests are located in `/test` folder.
 Test samples are kept in `/test/xxx/samples` folder.
 
 #### Running tests
+
+> PREREQUISITE: Install chromium via playwright by running `pnpm playwright install chromium`
 
 1. To run test, run `pnpm test`.
 1. To run test for a specific feature, you can use the `-g` (aka `--grep`) option. For example, to only run test involving transitions, run `pnpm test -- -g transition`.
@@ -145,7 +147,7 @@ When adding a new breaking change, follow this template in your pull request:
 
 ## License
 
-By contributing to Svelte, you agree that your contributions will be licensed under its [MIT license](https://github.com/sveltejs/svelte/blob/master/LICENSE).
+By contributing to Svelte, you agree that your contributions will be licensed under its [MIT license](https://github.com/sveltejs/svelte/blob/master/LICENSE.md).
 
 ## Questions
 

@@ -1,15 +1,13 @@
 import { base as app_base } from '$app/paths';
-import { modules } from '$lib/generated/type-info.js';
-import fs from 'node:fs';
-import { CONTENT_BASE_PATHS } from '../../../constants.js';
 import {
 	escape,
-	extract_frontmatter,
+	extractFrontmatter,
+	markedTransform,
 	normalizeSlugify,
-	removeMarkdown,
-	transform
-} from '../markdown/index.js';
-import { render_markdown } from '../markdown/renderer.js';
+	removeMarkdown
+} from '@sveltejs/site-kit/markdown';
+import { CONTENT_BASE_PATHS } from '../../../constants.js';
+import { render_content } from '../renderer';
 
 /**
  * @param {import('./types').DocsData} docs_data
@@ -21,7 +19,7 @@ export async function get_parsed_docs(docs_data, slug) {
 			if (page.slug === slug) {
 				return {
 					...page,
-					content: await render_markdown(page.file, page.content, { modules })
+					content: await render_content(page.file, page.content)
 				};
 			}
 		}
@@ -30,12 +28,14 @@ export async function get_parsed_docs(docs_data, slug) {
 	return null;
 }
 
-/** @return {import('./types').DocsData} */
-export function get_docs_data(base = CONTENT_BASE_PATHS.DOCS) {
+/** @return {Promise<import('./types').DocsData>} */
+export async function get_docs_data(base = CONTENT_BASE_PATHS.DOCS) {
+	const { readdir, readFile } = await import('node:fs/promises');
+
 	/** @type {import('./types').DocsData} */
 	const docs_data = [];
 
-	for (const category_dir of fs.readdirSync(base)) {
+	for (const category_dir of await readdir(base)) {
 		const match = /\d{2}-(.+)/.exec(category_dir);
 		if (!match) continue;
 
@@ -43,7 +43,7 @@ export function get_docs_data(base = CONTENT_BASE_PATHS.DOCS) {
 
 		// Read the meta.json
 		const { title: category_title, draft = 'false' } = JSON.parse(
-			fs.readFileSync(`${base}/${category_dir}/meta.json`, 'utf-8')
+			await readFile(`${base}/${category_dir}/meta.json`, 'utf-8')
 		);
 
 		if (draft === 'true') continue;
@@ -55,15 +55,15 @@ export function get_docs_data(base = CONTENT_BASE_PATHS.DOCS) {
 			pages: []
 		};
 
-		for (const filename of fs.readdirSync(`${base}/${category_dir}`)) {
+		for (const filename of await readdir(`${base}/${category_dir}`)) {
 			if (filename === 'meta.json') continue;
 			const match = /\d{2}-(.+)/.exec(filename);
 			if (!match) continue;
 
 			const page_slug = match[1].replace('.md', '');
 
-			const page_data = extract_frontmatter(
-				fs.readFileSync(`${base}/${category_dir}/${filename}`, 'utf-8')
+			const page_data = extractFrontmatter(
+				await readFile(`${base}/${category_dir}/${filename}`, 'utf-8')
 			);
 
 			if (page_data.metadata.draft === 'true') continue;
@@ -75,7 +75,8 @@ export function get_docs_data(base = CONTENT_BASE_PATHS.DOCS) {
 				title: page_title,
 				slug: page_slug,
 				content: page_content,
-				sections: get_sections(page_content),
+				category: category_title,
+				sections: await get_sections(page_content),
 				path: `${app_base}/docs/${page_slug}`,
 				file: `${category_dir}/${filename}`
 			});
@@ -98,27 +99,58 @@ export function get_docs_list(docs_data) {
 	}));
 }
 
-/** @param {string} markdown */
-function get_sections(markdown) {
-	const headingRegex = /^##\s+(.*)$/gm;
-	/** @type {import('./types').Section[]} */
-	const secondLevelHeadings = [];
-	let match;
+const titled = async (str) =>
+	removeMarkdown(
+		escape(await markedTransform(str, { paragraph: (txt) => txt }))
+			.replace(/<\/?code>/g, '')
+			.replace(/&#39;/g, "'")
+			.replace(/&quot;/g, '"')
+			.replace(/&lt;/g, '<')
+			.replace(/&gt;/g, '>')
+			.replace(/&amp;/, '&')
+			.replace(/<(\/)?(em|b|strong|code)>/g, '')
+	);
 
-	while ((match = headingRegex.exec(markdown)) !== null) {
-		secondLevelHeadings.push({
-			title: removeMarkdown(
-				escape(transform(match[1], { paragraph: (txt) => txt }))
-					.replace(/<\/?code>/g, '')
-					.replace(/&#39;/g, "'")
-					.replace(/&quot;/g, '"')
-					.replace(/&lt;/g, '<')
-					.replace(/&gt;/g, '>')
-					.replace(/<(\/)?(em|b|strong|code)>/g, '')
-			),
-			slug: normalizeSlugify(match[1])
-		});
+/** @param {string} markdown */
+export async function get_sections(markdown) {
+	const lines = markdown.split('\n');
+	const root = /** @type {import('./types').Section} */ ({
+		title: 'Root',
+		slug: 'root',
+		sections: [],
+		breadcrumbs: [''],
+		text: ''
+	});
+	let currentNodes = [root];
+
+	for (const line of lines) {
+		const match = line.match(/^(#{2,4})\s(.*)/);
+		if (match) {
+			const level = match[1].length - 2;
+			const text = await titled(match[2]);
+			const slug = normalizeSlugify(text);
+
+			// Prepare new node
+			/** @type {import('./types').Section} */
+			const newNode = {
+				title: text,
+				slug,
+				sections: [],
+				breadcrumbs: [...currentNodes[level].breadcrumbs, text],
+				text: ''
+			};
+
+			// Add the new node to the tree
+			currentNodes[level].sections.push(newNode);
+
+			// Prepare for potential children of the new node
+			currentNodes = currentNodes.slice(0, level + 1);
+			currentNodes.push(newNode);
+		} else if (line.trim() !== '') {
+			// Add non-heading line to the text of the current section
+			currentNodes[currentNodes.length - 1].text += line + '\n';
+		}
 	}
 
-	return secondLevelHeadings;
+	return root.sections;
 }

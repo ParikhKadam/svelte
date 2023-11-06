@@ -6,8 +6,6 @@
 	import { mapbox_setup, svelteUrl } from '../../../config.js';
 	import TableOfContents from './TableOfContents.svelte';
 
-	import '@sveltejs/site-kit/styles/code.css';
-
 	export let data;
 
 	/** @type {import('@sveltejs/repl').default} */
@@ -49,7 +47,7 @@
 	$: if (scrollable) data.tutorial, scrollable.scrollTo(0, 0);
 
 	$: selected = lookup.get(data.slug);
-	$: improve_link = `https://github.com/sveltejs/svelte/tree/master/documentation/content/tutorial/${data.tutorial.dir}`;
+	$: improve_link = `https://github.com/sveltejs/svelte/tree/master/documentation/tutorial/${data.tutorial.dir}`;
 
 	const clone = (file) => ({
 		name: file.name.replace(/.\w+$/, ''),
@@ -67,15 +65,20 @@
 	$: mobile = width < 768;
 
 	function reset() {
-		repl.update({
+		repl.set({
 			files: data.tutorial.initial.map(clone)
 		});
+
+		//! BUG: Fix handleChange on REPL side, setting repl.set doesn't trigger it, and repl.update doesn't even work
+		completed = false;
 	}
 
 	function complete() {
-		repl.update({
+		repl.set({
 			files: data.tutorial.complete.map(clone)
 		});
+
+		completed = true;
 	}
 
 	let completed = false;
@@ -158,7 +161,7 @@
 <style>
 	.tutorial-outer {
 		position: relative;
-		height: calc(100vh - var(--sk-nav-height));
+		height: calc(100vh - var(--sk-nav-height) - var(--sk-banner-bottom-height));
 		overflow: hidden;
 		padding: 0 0 42px 0;
 		box-sizing: border-box;

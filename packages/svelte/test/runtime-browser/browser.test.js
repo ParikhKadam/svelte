@@ -6,8 +6,7 @@ import * as svelte from 'svelte/compiler';
 import { afterAll, assert, beforeAll, describe, it } from 'vitest';
 import { pretty_print_browser_assertion, try_load_config } from '../helpers.js';
 
-const internal = path.resolve('src/runtime/internal/index.js');
-const index = path.resolve('src/runtime/index.js');
+const assert_file = path.resolve(__dirname, 'assert.js');
 
 /** @type {import('@playwright/test').Browser} */
 let browser;
@@ -62,9 +61,7 @@ async function run_browser_test(dir) {
 			alias: {
 				__MAIN_DOT_SVELTE__: path.resolve(__dirname, 'samples', dir, 'main.svelte'),
 				__CONFIG__: path.resolve(__dirname, 'samples', dir, '_config.js'),
-				'assert.js': path.resolve(__dirname, 'assert.js'),
-				'svelte/internal': internal,
-				svelte: index
+				'assert.js': assert_file
 			},
 			plugins: [
 				{
@@ -96,7 +93,7 @@ async function run_browser_test(dir) {
 			globalName: 'test'
 		});
 
-		function assertWarnings() {
+		function assert_warnings() {
 			if (config.warnings) {
 				assert.deepStrictEqual(
 					warnings.map((w) => ({
@@ -115,7 +112,7 @@ async function run_browser_test(dir) {
 			}
 		}
 
-		assertWarnings();
+		assert_warnings();
 
 		try {
 			const page = await browser.newPage();
@@ -169,9 +166,7 @@ async function run_custom_elements_test(dir) {
 			entryPoints: [`${cwd}/test.js`],
 			write: false,
 			alias: {
-				'assert.js': path.resolve(__dirname, 'assert.js'),
-				'svelte/internal': internal,
-				svelte: index
+				'assert.js': assert_file
 			},
 			plugins: [
 				{
@@ -196,7 +191,7 @@ async function run_custom_elements_test(dir) {
 			globalName: 'test'
 		});
 
-		function assertWarnings() {
+		function assert_warnings() {
 			if (expected_warnings) {
 				assert.deepStrictEqual(
 					warnings.map((w) => ({
@@ -210,7 +205,7 @@ async function run_custom_elements_test(dir) {
 				);
 			}
 		}
-		assertWarnings();
+		assert_warnings();
 
 		const page = await browser.newPage();
 		page.on('console', (type) => {

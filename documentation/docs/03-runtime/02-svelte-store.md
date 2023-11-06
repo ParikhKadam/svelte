@@ -4,9 +4,9 @@ title: 'svelte/store'
 
 The `svelte/store` module exports functions for creating [readable](/docs/svelte-store#readable), [writable](/docs/svelte-store#writable) and [derived](/docs/svelte-store#derived) stores.
 
-Keep in mind that you don't _have_ to use these functions to enjoy the [reactive `$store` syntax](/docs/svelte-components#4-prefix-stores-with-$-to-access-their-values) in your components. Any object that correctly implements `.subscribe`, unsubscribe, and (optionally) `.set` is a valid store, and will work both with the special syntax, and with Svelte's built-in [`derived` stores](/docs/svelte-store#derived).
+Keep in mind that you don't _have_ to use these functions to enjoy the [reactive `$store` syntax](/docs/svelte-components#script-4-prefix-stores-with-$-to-access-their-values) in your components. Any object that correctly implements `.subscribe`, unsubscribe, and (optionally) `.set` is a valid store, and will work both with the special syntax, and with Svelte's built-in [`derived` stores](/docs/svelte-store#derived).
 
-This makes it possible to wrap almost any other reactive state handling library for use in Svelte. Read more about the [store contract](/docs/svelte-components#4-prefix-stores-with-$-to-access-their-values) to see what a correct implementation looks like.
+This makes it possible to wrap almost any other reactive state handling library for use in Svelte. Read more about the [store contract](/docs/svelte-components#script-4-prefix-stores-with-$-to-access-their-values) to see what a correct implementation looks like.
 
 ## `writable`
 
@@ -61,8 +61,7 @@ Note that the value of a `writable` is lost when it is destroyed, for example wh
 
 Creates a store whose value cannot be set from 'outside', the first argument is the store's initial value, and the second argument to `readable` is the same as the second argument to `writable`.
 
-```js
-// ---cut---
+```ts
 import { readable } from 'svelte/store';
 
 const time = readable(new Date(), (set) => {
@@ -113,7 +112,7 @@ The callback can set a value asynchronously by accepting a second argument, `set
 
 In this case, you can also pass a third argument to `derived` — the initial value of the derived store before `set` or `update` is first called. If no initial value is specified, the store's initial value will be `undefined`.
 
-```js
+```ts
 // @filename: ambient.d.ts
 import { type Writable } from 'svelte/store';
 
@@ -128,13 +127,17 @@ export {};
 // ---cut---
 import { derived } from 'svelte/store';
 
-const delayed = derived(a, ($a, set) => {
-	setTimeout(() => set($a), 1000);
-}, 2000);
+const delayed = derived(
+	a,
+	($a, set) => {
+		setTimeout(() => set($a), 1000);
+	},
+	2000
+);
 
 const delayedIncrement = derived(a, ($a, set, update) => {
 	set($a);
-	setTimeout(() => update(x => x + 1), 1000);
+	setTimeout(() => update((x) => x + 1), 1000);
 	// every time $a produces a value, this produces two
 	// values, $a immediately and then $a + 1 a second later
 });
@@ -142,7 +145,7 @@ const delayedIncrement = derived(a, ($a, set, update) => {
 
 If you return a function from the callback, it will be called when a) the callback runs again, or b) the last subscriber unsubscribes.
 
-```js
+```ts
 // @filename: ambient.d.ts
 import { type Writable } from 'svelte/store';
 
@@ -223,7 +226,7 @@ Generally, you should read the value of a store by subscribing to it and using t
 
 > This works by creating a subscription, reading the value, then unsubscribing. It's therefore not recommended in hot code paths.
 
-```js
+```ts
 // @filename: ambient.d.ts
 import { type Writable } from 'svelte/store';
 

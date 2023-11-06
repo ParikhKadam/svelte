@@ -28,8 +28,8 @@
 		{:else}
 			<ul>
 				{#each [...eases] as [name]}
-					<li class:selected={name === current_ease} on:click={() => (current_ease = name)}>
-						{name}
+					<li class:selected={name === current_ease}>
+						<button on:click={() => (current_ease = name)}> {name}</button>
 					</li>
 				{/each}
 			</ul>
@@ -46,8 +46,8 @@
 		{:else}
 			<ul>
 				{#each types as [name, type]}
-					<li class:selected={type === current_type} on:click={() => (current_type = type)}>
-						{name}
+					<li class:selected={type === current_type}>
+						<button on:click={() => (current_type = type)}> {name}</button>
 					</li>
 				{/each}
 			</ul>
@@ -74,18 +74,14 @@
 	ul {
 		list-style: none;
 		padding: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 3px;
 		font-size: 18px;
 	}
 
 	li {
-		padding: 5px 10px;
-		background: #eee;
-		border-radius: 2px;
-		margin: 3px 0;
-		cursor: pointer;
+		display: grid;
 	}
 
 	li:hover {
@@ -93,9 +89,16 @@
 		color: white;
 	}
 
-	.selected {
+	button {
+		border: none;
+		border-radius: 2px;
+		padding: 2px;
+	}
+
+	.selected > button {
 		background: #ff3e00;
 		color: white;
+		font-weight: bold;
 	}
 
 	h3 {

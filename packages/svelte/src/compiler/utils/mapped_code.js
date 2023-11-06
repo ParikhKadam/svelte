@@ -266,9 +266,6 @@ export function combine_sourcemaps(filename, sourcemap_list) {
 	if (!map.sources.length) map.sources = [filename];
 	return map;
 }
-// browser vs node.js
-const b64enc = typeof btoa == 'function' ? btoa : (b) => Buffer.from(b).toString('base64');
-const b64dec = typeof atob == 'function' ? atob : (a) => Buffer.from(a, 'base64').toString();
 
 /**
  * @param {string} filename
@@ -295,7 +292,18 @@ export function apply_preprocessor_sourcemap(filename, svelte_map, preprocessor_
 		toUrl: {
 			enumerable: false,
 			value: function toUrl() {
-				return 'data:application/json;charset=utf-8;base64,' + b64enc(this.toString());
+				let b64 = '';
+				if (typeof window !== 'undefined' && window.btoa) {
+					// btoa doesn't support multi-byte characters
+					b64 = window.btoa(unescape(encodeURIComponent(this.toString())));
+				} else if (typeof Buffer !== 'undefined') {
+					b64 = Buffer.from(this.toString(), 'utf8').toString('base64');
+				} else {
+					throw new Error(
+						'Unsupported environment: `window.btoa` or `Buffer` should be present to use toUrl.'
+					);
+				}
+				return 'data:application/json;charset=utf-8;base64,' + b64;
 			}
 		}
 	});
@@ -339,7 +347,7 @@ export function parse_attached_sourcemap(processed, tag_name) {
 				// ignore attached sourcemap
 				return '';
 			}
-			processed.map = b64dec(map_data); // use attached sourcemap
+			processed.map = atob(map_data); // use attached sourcemap
 			return ''; // remove from processed.code
 		}
 		// sourceMappingURL is path or URL

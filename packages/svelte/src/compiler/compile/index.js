@@ -30,7 +30,8 @@ const valid_options = [
 	'loopGuardTimeout',
 	'preserveComments',
 	'preserveWhitespace',
-	'cssHash'
+	'cssHash',
+	'discloseVersion'
 ];
 const valid_css_values = [true, false, 'injected', 'external', 'none'];
 const regex_valid_identifier = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/;
@@ -56,16 +57,14 @@ function validate_options(options, warnings) {
 	}
 
 	const { name, filename, loopGuardTimeout, dev, namespace, css } = options;
-	Object.keys(options).forEach(
-		/** @param {any} key */ (key) => {
-			if (!valid_options.includes(key)) {
-				const match = fuzzymatch(key, valid_options);
-				let message = `Unrecognized option '${key}'`;
-				if (match) message += ` (did you mean '${match}'?)`;
-				throw new Error(message);
-			}
+	Object.keys(options).forEach((key) => {
+		if (!valid_options.includes(key)) {
+			const match = fuzzymatch(key, valid_options);
+			let message = `Unrecognized option '${key}'`;
+			if (match) message += ` (did you mean '${match}'?)`;
+			throw new Error(message);
 		}
-	);
+	});
 	if (name && !regex_valid_identifier.test(name)) {
 		throw new Error(`options.name must be a valid identifier (got '${name}')`);
 	}
@@ -112,9 +111,16 @@ function validate_options(options, warnings) {
 			throw new Error(`Invalid namespace '${namespace}'`);
 		}
 	}
+
+	if (options.discloseVersion == undefined) {
+		options.discloseVersion = true;
+	}
 }
 
 /**
+ * `compile` takes your component source code, and turns it into a JavaScript module that exports a class.
+ *
+ * https://svelte.dev/docs/svelte-compiler#svelte-compile
  * @param {string} source
  * @param {import('../interfaces.js').CompileOptions} options
  */

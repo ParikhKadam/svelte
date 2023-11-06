@@ -1,14 +1,9 @@
 <script>
-	import { Blurb } from '@sveltejs/site-kit/components';
-	import { theme } from '@sveltejs/site-kit/stores';
+	import { Blurb, Footer, TrySection } from '@sveltejs/site-kit/home';
 	import Demo from './_components/Demo.svelte';
 	import Hero from './_components/Hero.svelte';
-	import Image from './_components/Image.svelte';
 	import Supporters from './_components/Supporters/index.svelte';
-	import Try from './_components/Try.svelte';
 	import WhosUsingSvelte from './_components/WhosUsingSvelte/index.svelte';
-	import CollectiveDark from './svelte-collective-dark.png?big-image';
-	import CollectiveLight from './svelte-collective-light.png?big-image';
 </script>
 
 <svelte:head>
@@ -49,7 +44,7 @@
 	</div>
 </Blurb>
 
-<Try />
+<TrySection />
 
 <Demo />
 
@@ -57,36 +52,55 @@
 
 <Supporters />
 
-{#if $theme.current === 'light'}
-	<Image lazy src={CollectiveLight} alt="The Svelte logo in a ball pit" />
-{:else}
-	<Image lazy src={CollectiveDark} alt="The Svelte logo in a ball pit" />
-{/if}
-
-<footer>
-	<a href="/tutorial">Tutorial</a>
-	<a href="/docs">Docs</a>
-	<a href="/examples">Examples</a>
-	<a href="/blog">Blog</a>
-	<a href="https://opencollective.com/svelte">Open Collective</a>
-</footer>
+<Footer
+	links={{
+		resources: [
+			{
+				title: 'documentation',
+				href: '/docs'
+			},
+			{
+				title: 'tutorial',
+				href: '/tutorial'
+			},
+			{
+				title: 'examples',
+				href: '/examples'
+			},
+			{
+				title: 'blog',
+				href: '/blog'
+			}
+		],
+		connect: [
+			{
+				title: 'github',
+				href: 'https://github.com/sveltejs/svelte'
+			},
+			{
+				title: 'opencollective',
+				href: 'https://opencollective.com/svelte'
+			},
+			{
+				title: 'discord',
+				href: '/chat'
+			},
+			{
+				title: 'twitter',
+				href: 'https://twitter.com/sveltejs'
+			}
+		]
+	}}
+>
+	<span slot="license">
+		Svelte is <a href="https://github.com/sveltejs/svelte">free and open source software</a> released
+		under the MIT license
+	</span>
+</Footer>
 
 <style>
 	h2 {
 		line-height: 1.05;
-	}
-
-	footer {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		padding: 4rem;
-	}
-
-	footer a {
-		color: var(--sk-text-2);
-		padding: 0.5rem 1rem;
-		display: block;
 	}
 
 	p {

@@ -1,6 +1,6 @@
-# HEADS UP: BIG RESTRUCTURING UNDERWAY
+## Svelte compiler rewrite
 
-The Svelte repo is currently in the process of heavy restructuring for Svelte 4. After that, work on Svelte 5 will likely change a lot in the compiler as well. For that reason, please don't open PRs that are large in scope, touch more than a couple of files, etc. In other words, bug fixes are fine, but feature PRs will likely not be merged.
+Please note that [the Svelte codebase is currently being rewritten](https://svelte.dev/blog/runes). Thus, it's best to hold off on new features or refactorings for the time being.
 
 ### Before submitting the PR, please make sure you do the following
 
